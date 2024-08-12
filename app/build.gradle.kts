@@ -1,6 +1,10 @@
 plugins {
     alias(libs.plugins.android.application)
+    alias(libs.plugins.compose.compiler)
     alias(libs.plugins.jetbrains.kotlin.android)
+    alias(libs.plugins.google.gms.google.services)
+    alias(libs.plugins.google.dagger.hilt.android)
+    alias(libs.plugins.google.devtools.ksp)
 }
 
 android {
@@ -44,7 +48,7 @@ android {
     }
     packaging {
         resources {
-            excludes += "/META-INF/{AL2.0,LGPL2.1}"
+            excludes += "/META-INF/{AL2.0,LGPL2.1,DEPENDENCIES}"
         }
     }
 }
@@ -59,6 +63,8 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
+    // firebase storage Lib
+    implementation(libs.firebase.storage)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -67,4 +73,19 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
     implementation(libs.coil.compose)
+
+    //Dependency Injection
+    implementation(libs.androidx.hilt.navigation)
+    implementation(libs.dagger.hilt)
+    ksp(libs.dagger.hilt.compiler)
+
+    //Room Database
+    implementation(libs.androidx.room.common)
+    ksp(libs.androidx.room.compiler)
+    implementation(libs.androidx.room.ktx)
+
+    //Google Sheet Lib
+    implementation(libs.google.api.services.sheets)
+    implementation(libs.google.oauth.client.android)
+    implementation(libs.play.services.auth)
 }

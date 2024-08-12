@@ -19,9 +19,11 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.painterResource
 import com.mobily.bugit.MainActivity
 import com.mobily.bugit.R
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
 
 @SuppressLint("CustomSplashScreen")
+@AndroidEntryPoint
 class SplashScreen: ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {

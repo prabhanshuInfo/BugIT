@@ -26,20 +26,27 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.mobily.bugit.model.BugData
+import androidx.hilt.navigation.compose.hiltViewModel
+import coil.compose.rememberAsyncImagePainter
+import coil.request.ImageRequest
+import com.mobily.bugit.database.entity.BugEntity
 import com.mobily.bugit.ui.theme.BugItTheme
-import com.mobily.bugit.utils.CommanComponent
 import com.mobily.bugit.view.BugDetailScreen
 import com.mobily.bugit.view.NewBugAddScreen
+import com.mobily.bugit.viewModel.MainViewModel
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -66,7 +73,9 @@ class MainActivity : ComponentActivity() {
 
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
-    fun MainScreenLayout(onAddClicked: () -> Unit, onItemClick: (BugData) -> Unit) {
+    fun MainScreenLayout(onAddClicked: () -> Unit, onItemClick: (BugEntity) -> Unit) {
+        val mainViewModel: MainViewModel = hiltViewModel()
+        val bugList by mainViewModel.bugList.collectAsState()
         Scaffold(topBar = {
             TopAppBar(title = { Text("BugIT") }, actions = {
                 IconButton(onClick = { onAddClicked() }) {
@@ -78,8 +87,8 @@ class MainActivity : ComponentActivity() {
             )
         }) { padding ->
             LazyColumn(modifier = Modifier.padding(padding)) {
-                items(CommanComponent.sampleCardDataList) { data ->
-                    MainRecycleViewItem(bugData = data) {
+                items(bugList) { data ->
+                    MainRecycleViewItem(bugEntity = data) {
                         onItemClick(it)
                     }
                 }
@@ -88,24 +97,34 @@ class MainActivity : ComponentActivity() {
     }
 
     @Composable
-    fun MainRecycleViewItem(bugData: BugData, onItemClick: (BugData) -> Unit) {
+    fun MainRecycleViewItem(bugEntity: BugEntity, onItemClick: (BugEntity) -> Unit) {
         Column {
             Card(modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp)
                 .shadow(8.dp)
                 .clickable {
-                    onItemClick(bugData)
+                    onItemClick(bugEntity)
                 }) {
                 Row(modifier = Modifier.fillMaxWidth()) {
                     Image(
-                        painter = painterResource(id = R.drawable.app_logo),
-                        contentDescription = "Description of the image",
-                        modifier = Modifier.size(70.dp).align(Alignment.CenterVertically)
+                        painter = rememberAsyncImagePainter(
+                            ImageRequest.Builder(LocalContext.current).data(data = bugEntity.imageUrl)
+                                .apply(block = fun ImageRequest.Builder.() {
+                                    placeholder(R.drawable.placeholder)
+                                    error(R.drawable.placeholder)
+                                }).build()
+                        ),
+                        contentDescription = bugEntity.bugDescription,
+                        modifier = Modifier
+                            .size(70.dp)
+                            .align(Alignment.CenterVertically)
                     )
                     Text(
-                        text = bugData.title, modifier = Modifier
-                            .fillMaxSize().align(Alignment.CenterVertically).padding(0.dp,16.dp,16.dp,16.dp),
+                        text = bugEntity.bugDescription, modifier = Modifier
+                            .fillMaxSize()
+                            .align(Alignment.CenterVertically)
+                            .padding(0.dp, 16.dp, 16.dp, 16.dp),
                         maxLines = 2,
                         overflow = TextOverflow.Ellipsis
                     )

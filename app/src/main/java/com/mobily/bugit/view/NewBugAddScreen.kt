@@ -2,6 +2,7 @@ package com.mobily.bugit.view
 
 import android.net.Uri
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
@@ -10,6 +11,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -19,9 +21,11 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -41,9 +45,17 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import coil.annotation.ExperimentalCoilApi
-import coil.compose.rememberImagePainter
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
+import androidx.hilt.navigation.compose.hiltViewModel
+import coil.compose.rememberAsyncImagePainter
+import com.google.firebase.storage.FirebaseStorage
+import com.google.firebase.storage.StorageReference
+import com.mobily.bugit.database.entity.BugEntity
+import com.mobily.bugit.viewModel.AddBugViewModel
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class NewBugAddScreen : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -59,7 +71,9 @@ class NewBugAddScreen : ComponentActivity() {
     @Preview(showBackground = true)
     @Composable
     fun AddScreen() {
-        MyScreen()
+        AddBugFields { _, _ ->
+
+        }
     }
 
     @OptIn(ExperimentalMaterial3Api::class)
@@ -82,21 +96,26 @@ class NewBugAddScreen : ComponentActivity() {
             }
         ) { padding ->
             Column(modifier = Modifier.padding(padding)) {
-                MyScreen()
+                AddBugFields { images, description ->
+                    UploadImage(uris = images, description = description)
+                }
+
             }
         }
     }
 
-    @OptIn(ExperimentalCoilApi::class)
     @Composable
-    fun MyScreen() {
+    fun AddBugFields(onUploadButton: @Composable (images: List<Uri>, description: String) -> Unit) {
+        var callUploadTask by remember { mutableStateOf(false) }
         var selectImages by remember { mutableStateOf(listOf<Uri>()) }
+        var buttonEnabled by remember { mutableStateOf(false) }
+        var textState by remember { mutableStateOf("") }
 
         val galleryLauncher =
             rememberLauncherForActivityResult(ActivityResultContracts.GetMultipleContents()) {
                 selectImages = it
+                buttonEnabled = textState.isNotEmpty()
             }
-        var textState by remember { mutableStateOf("") }
 
         Column(
             modifier = Modifier
@@ -117,7 +136,7 @@ class NewBugAddScreen : ComponentActivity() {
                 LazyVerticalGrid(GridCells.Fixed(3)) {
                     items(selectImages) { uri ->
                         Image(
-                            painter = rememberImagePainter(uri),
+                            painter = rememberAsyncImagePainter(uri),
                             contentScale = ContentScale.FillWidth,
                             contentDescription = null,
                             modifier = Modifier
@@ -131,24 +150,69 @@ class NewBugAddScreen : ComponentActivity() {
                 }
             }
 
-            // Input field below the row
             TextField(
                 value = textState,
-                onValueChange = { textState = it },
+                onValueChange = { textState = it
+                    buttonEnabled = selectImages.isNotEmpty() && textState.isNotEmpty()},
                 label = { Text("Enter Bug Details") },
                 modifier = Modifier
                     .fillMaxWidth()
                     .size(0.dp, 300.dp)
             )
 
-            // Button at the bottom
             Button(
-                onClick = { /* TODO: Handle button click */ },
+                enabled = buttonEnabled,
+                onClick = { callUploadTask = true },
                 modifier = Modifier
                     .align(Alignment.CenterHorizontally)
                     .padding(top = 8.dp)
             ) {
                 Text("Submit")
+            }
+        }
+
+        if (callUploadTask) {
+            onUploadButton(selectImages, textState)
+        }
+    }
+
+    @Composable
+    private fun UploadImage(uris: List<Uri>, description: String) {
+        val addBugViewModel: AddBugViewModel = hiltViewModel()
+        var showDialog by remember { mutableStateOf(true) }
+
+        if (showDialog) {
+            Dialog(
+                onDismissRequest = {},
+                properties = DialogProperties(
+                    dismissOnBackPress = false,
+                    dismissOnClickOutside = false
+                )
+            ) {
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier
+                        .size(100.dp)
+                        .background(Color.Gray, shape = RoundedCornerShape(8.dp))
+                ) {
+                    CircularProgressIndicator()
+                }
+            }
+            val uri = Uri.parse(uris[0].toString())
+            val imageName = uri.lastPathSegment ?: "Unknown"
+            val ref: StorageReference = FirebaseStorage.getInstance().getReference().child("images_$imageName")
+            ref.putFile(uris[0]).addOnSuccessListener { taskSnapshot ->
+                Toast.makeText(applicationContext, "File Uploaded Successfully", Toast.LENGTH_LONG).show()
+                taskSnapshot.storage.downloadUrl.addOnSuccessListener {
+                    showDialog = false
+                    val bugEntity = BugEntity(0,"$it", description)
+                    addBugViewModel.insertBug(bugEntity)
+                    finish()
+                }
+
+            }.addOnFailureListener {
+                showDialog = false
+                Toast.makeText(applicationContext, "File Upload Failed...", Toast.LENGTH_LONG).show()
             }
         }
     }

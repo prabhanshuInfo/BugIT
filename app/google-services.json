@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1044426645613",
+    "project_id": "bugit-5cfe3",
+    "storage_bucket": "bugit-5cfe3.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1044426645613:android:b277b1a27ebc6ea50d1f64",
+        "android_client_info": {
+          "package_name": "com.mobily.bugit"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDoZnKcqf9DPJEbOsBMyGCsXYU14pJsPvo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
