@@ -1,5 +1,6 @@
 package com.mobily.bugit.view
 
+import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.widget.Toast
@@ -116,6 +117,10 @@ class NewBugAddScreen : ComponentActivity() {
                 selectImages = it
                 buttonEnabled = textState.isNotEmpty()
             }
+        handleIncomingImage(intent)?.let { uri ->
+            selectImages = listOf(uri)
+            buttonEnabled = textState.isNotEmpty()
+        }
 
         Column(
             modifier = Modifier
@@ -205,6 +210,7 @@ class NewBugAddScreen : ComponentActivity() {
                 Toast.makeText(applicationContext, "File Uploaded Successfully", Toast.LENGTH_LONG).show()
                 taskSnapshot.storage.downloadUrl.addOnSuccessListener {
                     showDialog = false
+                    addBugViewModel.addValueToNotionPage("$it", description)
                     val bugEntity = BugEntity(0,"$it", description)
                     addBugViewModel.insertBug(bugEntity)
                     finish()
@@ -214,6 +220,23 @@ class NewBugAddScreen : ComponentActivity() {
                 showDialog = false
                 Toast.makeText(applicationContext, "File Upload Failed...", Toast.LENGTH_LONG).show()
             }
+        }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setContent {
+            AddBugScreen(onBackClicked = {
+                finish()
+            })
+        }
+    }
+
+    private fun handleIncomingImage(intent: Intent): Uri? {
+        return if (intent.action == Intent.ACTION_SEND && intent.type?.startsWith("image/") == true) {
+            intent.getParcelableExtra(Intent.EXTRA_STREAM)
+        } else {
+            null
         }
     }
 }

@@ -111,8 +111,8 @@ class MainActivity : ComponentActivity() {
                         painter = rememberAsyncImagePainter(
                             ImageRequest.Builder(LocalContext.current).data(data = bugEntity.imageUrl)
                                 .apply(block = fun ImageRequest.Builder.() {
-                                    placeholder(R.drawable.placeholder)
-                                    error(R.drawable.placeholder)
+                                    placeholder(R.drawable.app_logo)
+                                    error(R.drawable.app_logo)
                                 }).build()
                         ),
                         contentDescription = bugEntity.bugDescription,

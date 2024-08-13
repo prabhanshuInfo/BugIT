@@ -2,6 +2,9 @@ package com.mobily.bugit.di
 
 import android.content.Context
 import androidx.room.Room
+import com.mobily.bugit.data.api.ApiHelper
+import com.mobily.bugit.data.api.ApiHelperImp
+import com.mobily.bugit.data.api.ApiService
 import com.mobily.bugit.database.AppDatabase
 import com.mobily.bugit.database.dao.BugDao
 import com.mobily.bugit.domain.BugRepositoryImpl
@@ -13,11 +16,45 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import okhttp3.OkHttpClient
+import okhttp3.logging.HttpLoggingInterceptor
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
 import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
 object AppModule {
+
+    @Provides
+    fun provideBaseUrl() = "https://api.notion.com/"
+
+    @Provides
+    @Singleton
+    fun provideOkHttpClient() : OkHttpClient{
+        val builder = OkHttpClient.Builder()
+        return builder.build()
+    }
+
+    @Provides
+    @Singleton
+    fun provideRetrofit(
+        okHttpClient: OkHttpClient,
+        baseUrl: String
+    ): Retrofit =
+        Retrofit.Builder()
+            .addConverterFactory(GsonConverterFactory.create())
+            .baseUrl(baseUrl)
+            .client(okHttpClient)
+            .build()
+
+    @Provides
+    @Singleton
+    fun provideApiService(retrofit: Retrofit): ApiService = retrofit.create(ApiService::class.java)
+
+    @Provides
+    @Singleton
+    fun provideApiHelper(apiHelper: ApiHelperImp): ApiHelper = apiHelper
 
     @Provides
     @Singleton

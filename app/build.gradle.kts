@@ -84,8 +84,13 @@ dependencies {
     ksp(libs.androidx.room.compiler)
     implementation(libs.androidx.room.ktx)
 
-    //Google Sheet Lib
-    implementation(libs.google.api.services.sheets)
-    implementation(libs.google.oauth.client.android)
-    implementation(libs.play.services.auth)
+    implementation (libs.kotlin.stdlib.jdk7)
+//Import okHttp dependencies
+    implementation(libs.logging.interceptor)
+    implementation(libs.okhttp)
+
+//Import Retrofit dependencies
+    implementation(libs.converter.gson)
+    implementation(libs.retrofit)
+
 }
