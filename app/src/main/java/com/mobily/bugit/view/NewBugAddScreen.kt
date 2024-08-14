@@ -52,6 +52,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.rememberAsyncImagePainter
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
+import com.mobily.bugit.MainActivity
 import com.mobily.bugit.database.entity.BugEntity
 import com.mobily.bugit.viewModel.AddBugViewModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -59,12 +60,13 @@ import dagger.hilt.android.AndroidEntryPoint
 @AndroidEntryPoint
 class NewBugAddScreen : ComponentActivity() {
 
+    private var isOnNewIntent = false
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
             AddBugScreen(onBackClicked = {
-                finish()
+                backToMainScreen()
             })
         }
     }
@@ -213,7 +215,7 @@ class NewBugAddScreen : ComponentActivity() {
                     addBugViewModel.addValueToNotionPage("$it", description)
                     val bugEntity = BugEntity(0,"$it", description)
                     addBugViewModel.insertBug(bugEntity)
-                    finish()
+                    backToMainScreen()
                 }
 
             }.addOnFailureListener {
@@ -225,15 +227,26 @@ class NewBugAddScreen : ComponentActivity() {
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
+        isOnNewIntent = true
         setContent {
             AddBugScreen(onBackClicked = {
-                finish()
+                backToMainScreen()
             })
         }
     }
 
+    private fun backToMainScreen(){
+        if (isOnNewIntent){
+            val intent = Intent(this, MainActivity::class.java)
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK)
+            startActivity(intent)
+        }
+        finish()
+    }
+
     private fun handleIncomingImage(intent: Intent): Uri? {
         return if (intent.action == Intent.ACTION_SEND && intent.type?.startsWith("image/") == true) {
+            isOnNewIntent = true
             intent.getParcelableExtra(Intent.EXTRA_STREAM)
         } else {
             null

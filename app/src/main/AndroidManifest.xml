@@ -13,11 +13,11 @@
         android:label="@string/app_name"
         android:roundIcon="@drawable/app_logo"
         android:supportsRtl="true"
-        android:theme="@style/Theme.BugIt"
+        android:theme="@style/Theme.App.Starting"
         tools:targetApi="31">
-        <activity
-            android:name=".view.SplashScreen"
+        <activity android:name=".MainActivity"
             android:exported="true"
+            android:launchMode="singleInstance"
             android:theme="@style/Theme.BugIt">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -25,9 +25,9 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".MainActivity" />
         <activity android:name="com.mobily.bugit.view.NewBugAddScreen"
             android:exported="true"
+            android:theme="@style/Theme.BugIt"
             android:parentActivityName=".MainActivity">
         <intent-filter>
             <action android:name="android.intent.action.SEND" />
@@ -35,7 +35,8 @@
             <data android:mimeType="image/*" />
         </intent-filter>
         </activity>
-        <activity android:name="com.mobily.bugit.view.BugDetailScreen" />
+        <activity android:name="com.mobily.bugit.view.BugDetailScreen"
+            android:theme="@style/Theme.BugIt"/>
     </application>
 
 </manifest>
