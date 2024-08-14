@@ -1,4 +1,4 @@
-package com.mobily.bugit.view
+package com.mobily.bugit.presentation.view
 
 import android.annotation.SuppressLint
 import android.os.Build

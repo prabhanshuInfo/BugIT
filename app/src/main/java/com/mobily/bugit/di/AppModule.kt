@@ -11,13 +11,14 @@ import com.mobily.bugit.domain.BugRepositoryImpl
 import com.mobily.bugit.domain.repo.BugRepository
 import com.mobily.bugit.domain.useCases.FetchBugUseCase
 import com.mobily.bugit.domain.useCases.InsertBugUseCase
+import com.mobily.bugit.domain.useCases.UploadImageOnFirebaseUseCase
+import com.mobily.bugit.utils.AppConstants.BASE_URL
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import okhttp3.OkHttpClient
-import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import javax.inject.Singleton
@@ -25,9 +26,6 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object AppModule {
-
-    @Provides
-    fun provideBaseUrl() = "https://api.notion.com/"
 
     @Provides
     @Singleton
@@ -39,12 +37,11 @@ object AppModule {
     @Provides
     @Singleton
     fun provideRetrofit(
-        okHttpClient: OkHttpClient,
-        baseUrl: String
+        okHttpClient: OkHttpClient
     ): Retrofit =
         Retrofit.Builder()
             .addConverterFactory(GsonConverterFactory.create())
-            .baseUrl(baseUrl)
+            .baseUrl(BASE_URL)
             .client(okHttpClient)
             .build()
 
@@ -86,5 +83,11 @@ object AppModule {
     @Singleton
     fun provideInsertBugUseCase(repository: BugRepository): InsertBugUseCase {
         return InsertBugUseCase(repository)
+    }
+
+    @Provides
+    @Singleton
+    fun provideInsertImageOnFirebaseUseCase(repository: BugRepository): UploadImageOnFirebaseUseCase{
+        return UploadImageOnFirebaseUseCase(repository)
     }
 }

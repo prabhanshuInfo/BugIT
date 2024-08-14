@@ -1,4 +1,4 @@
-package com.mobily.bugit
+package com.mobily.bugit.presentation
 
 import android.content.Intent
 import android.os.Bundle
@@ -45,11 +45,12 @@ import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
+import com.mobily.bugit.R
 import com.mobily.bugit.database.entity.BugEntity
 import com.mobily.bugit.ui.theme.BugItTheme
-import com.mobily.bugit.view.BugDetailScreen
-import com.mobily.bugit.view.NewBugAddScreen
-import com.mobily.bugit.viewModel.MainViewModel
+import com.mobily.bugit.presentation.view.BugDetailScreen
+import com.mobily.bugit.presentation.view.NewBugAddScreen
+import com.mobily.bugit.presentation.viewModel.MainViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint

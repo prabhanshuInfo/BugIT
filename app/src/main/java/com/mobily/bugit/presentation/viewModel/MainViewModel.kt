@@ -1,4 +1,4 @@
-package com.mobily.bugit.viewModel
+package com.mobily.bugit.presentation.viewModel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

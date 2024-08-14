@@ -1,10 +1,8 @@
 package com.mobily.bugit.utils
 
-class AppConstants {
-    companion object{
-        internal const val NOTION_TOKEN = ""
-        internal const val NOTION_VERSION = ""
-        internal const val NOTION_DATABASE_ID = ""
-
-    }
+object AppConstants {
+    const val NOTION_TOKEN = ""
+    const val NOTION_VERSION = ""
+    const val NOTION_DATABASE_ID = ""
+    const val BASE_URL = "https://api.notion.com/"
 }

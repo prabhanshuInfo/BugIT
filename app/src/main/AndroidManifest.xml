@@ -15,7 +15,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.App.Starting"
         tools:targetApi="31">
-        <activity android:name=".MainActivity"
+        <activity android:name=".presentation.MainActivity"
             android:exported="true"
             android:launchMode="singleInstance"
             android:theme="@style/Theme.BugIt">
@@ -25,17 +25,17 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name="com.mobily.bugit.view.NewBugAddScreen"
+        <activity android:name="com.mobily.bugit.presentation.view.NewBugAddScreen"
             android:exported="true"
             android:theme="@style/Theme.BugIt"
-            android:parentActivityName=".MainActivity">
+            android:parentActivityName=".presentation.MainActivity">
         <intent-filter>
             <action android:name="android.intent.action.SEND" />
             <category android:name="android.intent.category.DEFAULT" />
             <data android:mimeType="image/*" />
         </intent-filter>
         </activity>
-        <activity android:name="com.mobily.bugit.view.BugDetailScreen"
+        <activity android:name="com.mobily.bugit.presentation.view.BugDetailScreen"
             android:theme="@style/Theme.BugIt"/>
     </application>
 

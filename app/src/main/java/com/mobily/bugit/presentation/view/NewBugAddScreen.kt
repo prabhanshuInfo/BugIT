@@ -1,4 +1,4 @@
-package com.mobily.bugit.view
+package com.mobily.bugit.presentation.view
 
 import android.content.Intent
 import android.net.Uri
@@ -35,6 +35,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -50,12 +51,10 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.rememberAsyncImagePainter
-import com.google.firebase.storage.FirebaseStorage
-import com.google.firebase.storage.StorageReference
-import com.mobily.bugit.MainActivity
-import com.mobily.bugit.database.entity.BugEntity
+import com.mobily.bugit.presentation.MainActivity
+import com.mobily.bugit.presentation.viewModel.AddBugViewModel
 import com.mobily.bugit.utils.NetworkHelper
-import com.mobily.bugit.viewModel.AddBugViewModel
+import com.mobily.bugit.utils.Result
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
@@ -164,8 +163,10 @@ class NewBugAddScreen : ComponentActivity() {
 
             TextField(
                 value = textState,
-                onValueChange = { textState = it
-                    buttonEnabled = selectImages.isNotEmpty() && textState.isNotEmpty()},
+                onValueChange = {
+                    textState = it
+                    buttonEnabled = selectImages.isNotEmpty() && textState.isNotEmpty()
+                },
                 label = { Text("Enter Bug Details") },
                 modifier = Modifier
                     .fillMaxWidth()
@@ -211,31 +212,36 @@ class NewBugAddScreen : ComponentActivity() {
                         CircularProgressIndicator()
                     }
                 }
-                val uri = Uri.parse(uris[0].toString())
-                val imageName = uri.lastPathSegment ?: "Unknown"
-                val ref: StorageReference =
-                    FirebaseStorage.getInstance().getReference().child("images_$imageName")
-                ref.putFile(uris[0]).addOnSuccessListener { taskSnapshot ->
-                    Toast.makeText(
-                        applicationContext,
-                        "File Uploaded Successfully",
-                        Toast.LENGTH_LONG
-                    ).show()
-                    taskSnapshot.storage.downloadUrl.addOnSuccessListener {
-                        showDialog = false
-                        addBugViewModel.addValueToNotionPage("$it", description)
-                        val bugEntity = BugEntity(0, "$it", description)
-                        addBugViewModel.insertBug(bugEntity)
-                        backToMainScreen()
-                    }
+                addBugViewModel.uploadImageOnFirebase(uri = uris[0], description = description)
+                addBugViewModel.resultState.collectAsState().let {
+                    when (it.value) {
+                        is Result.Loading -> {
+                            showDialog = true
+                        }
 
-                }.addOnFailureListener {
-                    showDialog = false
-                    Toast.makeText(applicationContext, "File Upload Failed...", Toast.LENGTH_LONG)
-                        .show()
+                        is Result.Failed -> {
+                            showDialog = false
+                            Toast.makeText(
+                                applicationContext,
+                                "File Upload Failed...",
+                                Toast.LENGTH_LONG
+                            )
+                                .show()
+                        }
+
+                        is Result.Success -> {
+                            showDialog = false
+                            Toast.makeText(
+                                applicationContext,
+                                "File Uploaded Successfully",
+                                Toast.LENGTH_LONG
+                            ).show()
+                            backToMainScreen()
+                        }
+                    }
                 }
             }
-        }else{
+        } else {
             Toast.makeText(
                 applicationContext,
                 "Please Check your network connection.",
@@ -254,8 +260,8 @@ class NewBugAddScreen : ComponentActivity() {
         }
     }
 
-    private fun backToMainScreen(){
-        if (isOnNewIntent){
+    private fun backToMainScreen() {
+        if (isOnNewIntent) {
             val intent = Intent(this, MainActivity::class.java)
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK)
             startActivity(intent)
