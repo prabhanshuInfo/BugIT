@@ -8,20 +8,24 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -36,6 +40,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.rememberAsyncImagePainter
@@ -78,7 +83,8 @@ class MainActivity : ComponentActivity() {
     fun MainScreenLayout(onAddClicked: () -> Unit, onItemClick: (BugEntity) -> Unit) {
         val mainViewModel: MainViewModel = hiltViewModel()
         val bugList by mainViewModel.bugList.collectAsState()
-        Scaffold(topBar = {
+        Scaffold(
+            topBar = {
             TopAppBar(title = { Text("BugIT") }, actions = {
                 IconButton(onClick = { onAddClicked() }) {
                     Icon(Icons.Filled.Add, contentDescription = "Add")
@@ -87,49 +93,89 @@ class MainActivity : ComponentActivity() {
                 .background(Color.Blue)
                 .shadow(12.dp)
             )
-        }) { padding ->
-            LazyColumn(modifier = Modifier.padding(padding)) {
-                items(bugList) { data ->
-                    MainRecycleViewItem(bugEntity = data) {
-                        onItemClick(it)
+        })
+    { padding ->
+            if (bugList.isEmpty()) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize().padding(padding),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "There are no bug register.\nPlease click on + icon to add new bug",
+                    )
+                }
+            } else {
+                LazyColumn(modifier = Modifier.padding(padding)
+                    .background(Color(0x9AE3E9EA)).fillMaxHeight()) {
+                    items(bugList) { data ->
+                        MainRecycleViewItem(bugEntity = data) {
+                            onItemClick(it)
+                        }
                     }
                 }
             }
+
         }
     }
 
     @Composable
     fun MainRecycleViewItem(bugEntity: BugEntity, onItemClick: (BugEntity) -> Unit) {
         Column {
-            Card(modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
-                .shadow(8.dp)
-                .clickable {
-                    onItemClick(bugEntity)
-                }) {
-                Row(modifier = Modifier.fillMaxWidth()) {
-                    Image(
-                        painter = rememberAsyncImagePainter(
-                            ImageRequest.Builder(LocalContext.current).data(data = bugEntity.imageUrl)
-                                .apply(block = fun ImageRequest.Builder.() {
-                                    placeholder(R.drawable.app_logo)
-                                    error(R.drawable.app_logo)
-                                }).build()
-                        ),
-                        contentDescription = bugEntity.bugDescription,
+            Card(
+                shape = RoundedCornerShape(16.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
+                    .background(Color.Transparent)
+                    .clickable {
+                        onItemClick(bugEntity)
+                    }) {
+                Box(modifier = Modifier.background(Color.White)){
+                    Row(
                         modifier = Modifier
-                            .size(70.dp)
-                            .align(Alignment.CenterVertically)
-                    )
-                    Text(
-                        text = bugEntity.bugDescription, modifier = Modifier
-                            .fillMaxSize()
-                            .align(Alignment.CenterVertically)
-                            .padding(0.dp, 16.dp, 16.dp, 16.dp),
-                        maxLines = 2,
-                        overflow = TextOverflow.Ellipsis
-                    )
+                            .fillMaxWidth()
+                            .padding(10.dp)
+                    ) {
+                        Image(
+                            painter = rememberAsyncImagePainter(
+                                ImageRequest.Builder(LocalContext.current)
+                                    .data(data = bugEntity.imageUrl)
+                                    .apply(block = fun ImageRequest.Builder.() {
+                                        placeholder(R.drawable.app_logo)
+                                        error(R.drawable.app_logo)
+                                    }).build()
+                            ),
+                            contentDescription = bugEntity.bugDescription,
+                            modifier = Modifier
+                                .size(70.dp)
+                                .align(Alignment.CenterVertically)
+                        )
+                        Column(modifier = Modifier.align(Alignment.CenterVertically)) {
+                            Text(
+                                text = "Bug Description",
+                                fontSize = 16.sp,
+                                style = MaterialTheme.typography.labelMedium,
+                                modifier = Modifier
+                                    .align(Alignment.Start)
+                                    .fillMaxWidth(),
+                                color = Color.Black
+                            )
+
+                            Text(
+                                text = bugEntity.bugDescription, modifier = Modifier
+                                    .fillMaxSize()
+                                    .align(Alignment.CenterHorizontally)
+                                    .padding(0.dp, 3.dp, 16.dp, 3.dp),
+                                style = MaterialTheme.typography.bodyMedium,
+                                fontSize = 14.sp,
+                                maxLines = 2,
+                                overflow = TextOverflow.Ellipsis,
+                                color = Color.Black
+                            )
+                        }
+
+                    }
                 }
             }
         }

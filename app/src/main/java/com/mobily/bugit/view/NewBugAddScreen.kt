@@ -54,11 +54,16 @@ import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
 import com.mobily.bugit.MainActivity
 import com.mobily.bugit.database.entity.BugEntity
+import com.mobily.bugit.utils.NetworkHelper
 import com.mobily.bugit.viewModel.AddBugViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class NewBugAddScreen : ComponentActivity() {
+
+    @Inject
+    lateinit var networkHelper: NetworkHelper
 
     private var isOnNewIntent = false
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -188,40 +193,54 @@ class NewBugAddScreen : ComponentActivity() {
         val addBugViewModel: AddBugViewModel = hiltViewModel()
         var showDialog by remember { mutableStateOf(true) }
 
-        if (showDialog) {
-            Dialog(
-                onDismissRequest = {},
-                properties = DialogProperties(
-                    dismissOnBackPress = false,
-                    dismissOnClickOutside = false
-                )
-            ) {
-                Box(
-                    contentAlignment = Alignment.Center,
-                    modifier = Modifier
-                        .size(100.dp)
-                        .background(Color.Gray, shape = RoundedCornerShape(8.dp))
+        if (networkHelper.isNetworkAvailable()) {
+            if (showDialog) {
+                Dialog(
+                    onDismissRequest = {},
+                    properties = DialogProperties(
+                        dismissOnBackPress = false,
+                        dismissOnClickOutside = false
+                    )
                 ) {
-                    CircularProgressIndicator()
+                    Box(
+                        contentAlignment = Alignment.Center,
+                        modifier = Modifier
+                            .size(100.dp)
+                            .background(Color.Gray, shape = RoundedCornerShape(8.dp))
+                    ) {
+                        CircularProgressIndicator()
+                    }
                 }
-            }
-            val uri = Uri.parse(uris[0].toString())
-            val imageName = uri.lastPathSegment ?: "Unknown"
-            val ref: StorageReference = FirebaseStorage.getInstance().getReference().child("images_$imageName")
-            ref.putFile(uris[0]).addOnSuccessListener { taskSnapshot ->
-                Toast.makeText(applicationContext, "File Uploaded Successfully", Toast.LENGTH_LONG).show()
-                taskSnapshot.storage.downloadUrl.addOnSuccessListener {
-                    showDialog = false
-                    addBugViewModel.addValueToNotionPage("$it", description)
-                    val bugEntity = BugEntity(0,"$it", description)
-                    addBugViewModel.insertBug(bugEntity)
-                    backToMainScreen()
-                }
+                val uri = Uri.parse(uris[0].toString())
+                val imageName = uri.lastPathSegment ?: "Unknown"
+                val ref: StorageReference =
+                    FirebaseStorage.getInstance().getReference().child("images_$imageName")
+                ref.putFile(uris[0]).addOnSuccessListener { taskSnapshot ->
+                    Toast.makeText(
+                        applicationContext,
+                        "File Uploaded Successfully",
+                        Toast.LENGTH_LONG
+                    ).show()
+                    taskSnapshot.storage.downloadUrl.addOnSuccessListener {
+                        showDialog = false
+                        addBugViewModel.addValueToNotionPage("$it", description)
+                        val bugEntity = BugEntity(0, "$it", description)
+                        addBugViewModel.insertBug(bugEntity)
+                        backToMainScreen()
+                    }
 
-            }.addOnFailureListener {
-                showDialog = false
-                Toast.makeText(applicationContext, "File Upload Failed...", Toast.LENGTH_LONG).show()
+                }.addOnFailureListener {
+                    showDialog = false
+                    Toast.makeText(applicationContext, "File Upload Failed...", Toast.LENGTH_LONG)
+                        .show()
+                }
             }
+        }else{
+            Toast.makeText(
+                applicationContext,
+                "Please Check your network connection.",
+                Toast.LENGTH_LONG
+            ).show()
         }
     }
 

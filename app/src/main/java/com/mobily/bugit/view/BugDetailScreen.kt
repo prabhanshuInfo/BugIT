@@ -20,6 +20,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -29,8 +30,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
 import com.mobily.bugit.R
@@ -106,10 +110,29 @@ class BugDetailScreen : ComponentActivity() {
             Spacer(modifier = Modifier.height(16.dp))
 
             data?.bugDescription?.let {
-                Text(
-                    text = it,
-                    modifier = Modifier.fillMaxWidth()
-                )
+                Column(modifier = Modifier.align(Alignment.CenterHorizontally).background(Color(0x9AE3E9EA)).padding(10.dp)) {
+                    Text(
+                        text = "Bug Description:",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier
+                            .align(Alignment.Start)
+                            .fillMaxWidth(),
+                        color = Color.Black
+                    )
+
+                    Text(
+                        text = it, modifier = Modifier
+                            .fillMaxSize()
+                            .align(Alignment.CenterHorizontally)
+                            .padding(0.dp, 3.dp, 16.dp, 3.dp),
+                        fontSize = 14.sp,
+                        style = MaterialTheme.typography.bodyLarge,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis,
+                        color = Color.Black
+                    )
+                }
             }
         }
 
